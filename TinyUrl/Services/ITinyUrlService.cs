@@ -1,7 +1,11 @@
-﻿namespace TinyUrl.Services
+﻿using TinyUrl.Models;
+
+namespace TinyUrl.Services
 {
     public interface ITinyUrlService
     {
-        public Task CreateTinyUrl(Uri url);
+        public Task<Uri> CreateTinyUrl(Uri url);
+
+        public Task<Uri> GetOriginal(Uri url);
     }
 }

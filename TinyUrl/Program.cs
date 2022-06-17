@@ -1,3 +1,4 @@
+using TinyUrl.Dal;
 using TinyUrl.Models;
 using TinyUrl.Services;
 using TinyUrl.Validators;
@@ -13,9 +14,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ITinyUrlGeneretor, TinyUrlGenerator>();
 builder.Services.AddScoped<ITinyUrlValidator, TinyUrlValidator>();
 builder.Services.AddScoped<ITinyUrlService, TinyUrlService>();
-builder.Services.AddSingleton<IBooksService, BooksService>();
-builder.Services.Configure<BookStoreDatabaseSettings>(
-    builder.Configuration.GetSection("BookStoreDatabase"));
+builder.Services.AddScoped<ITinyUrlDal, TinyUrlDal>();
+builder.Services.AddSingleton<ITinyUrlMongoDBClient, TinyUrlMongoDBClient>();
+builder.Services.Configure<UrlsDatabaseSettings>(
+    builder.Configuration.GetSection("UrlsDataBase"));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

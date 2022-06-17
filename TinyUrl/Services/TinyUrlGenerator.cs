@@ -11,7 +11,7 @@ namespace TinyUrl.Services
             byte[] bytes = Encoding.UTF8.GetBytes(url.LocalPath);
             byte[] hash = murmur.ComputeHash(bytes);
 
-            string tinyUrl =  $"{url.Scheme}//{url.Host}/{BitConverter.ToString(hash)}";
+            string tinyUrl =  $"{url.Scheme}://{url.Host}/{BitConverter.ToString(hash)}";
             return new Uri(tinyUrl);
         }
     }

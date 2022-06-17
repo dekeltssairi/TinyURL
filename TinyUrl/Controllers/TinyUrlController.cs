@@ -9,34 +9,23 @@ namespace TinyUrl.Controllers
     [ApiController]
     public class TinyUrlController : ControllerBase
     {
-        private readonly IBooksService _bookService;
         private readonly ITinyUrlService _tinyUrlService;
 
-        public TinyUrlController(ITinyUrlService tinyUrlService, IBooksService booksService)
+        public TinyUrlController(ITinyUrlService tinyUrlService)
         {
-            _bookService = booksService ?? throw new ArgumentNullException(nameof(booksService));
             _tinyUrlService = tinyUrlService ?? throw new ArgumentNullException(nameof(tinyUrlService));
         }
 
-        // GET: api/<TinyUrlController>
         [HttpGet]
-        public string Get()
+        public async Task<Uri> Get(Uri url)
         {
-            return "value1";
+            return await _tinyUrlService.GetOriginal(url);
         }
 
-        //// GET api/<TinyUrlController>/5
-        //[HttpGet("{id}")]
-        //public string Get(int id)
-        //{
-        //    return "value";
-        //}
-
-        // POST api/<TinyUrlController>
         [HttpPost]
-        public async Task Post([FromBody] Uri url)
+        public async Task<Uri> Post([FromBody] Uri url)
         {
-            await _tinyUrlService.CreateTinyUrl(url);
+            return await _tinyUrlService.CreateTinyUrl(url);
         }
     }
 }

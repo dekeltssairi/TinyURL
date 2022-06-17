@@ -1,29 +1,38 @@
-﻿using TinyUrl.Models;
+﻿using MongoDB.Bson;
+using TinyUrl.Models;
 using TinyUrl.Services;
 
 namespace TinyUrl.Dal
 {
     public class TinyUrlDal : ITinyUrlDal
     {
-        private readonly IBooksService _booksService;
+        private readonly ITinyUrlMongoDBClient _tinyUrlMongoDBClient;
 
-        public TinyUrlDal(IBooksService bookService)
+        public TinyUrlDal(ITinyUrlMongoDBClient tinyUrlMongoDBClient)
         {
-            _booksService = bookService ?? throw new ArgumentNullException(nameof(bookService));
+            _tinyUrlMongoDBClient = tinyUrlMongoDBClient ?? throw new ArgumentNullException(nameof(tinyUrlMongoDBClient));
         }
 
-        public async Task InsertTinyUrl(Uri originalUrl, Uri tinyUrl)
+        public async Task<UrlModel> InsertTinyUrl(Uri tinyUrl)
         {
-            Book book = new Book()
+            UrlModel urlModel = new UrlModel()
             {
-                Id = "my-firt-id-book",
-                BookName = "my-book-name",
-                Price = 10,
-                Category = "economy",
-                Author = "Dekel"
+                OriginalUrl = tinyUrl,
             };
 
-            await _booksService.CreateAsync(book);
+            return await _tinyUrlMongoDBClient.InsertAsync(urlModel);
+        }
+
+        public async Task<UrlModel> GetOriginal(Uri tinyUrl)
+        {
+            ObjectId objectId = ObjectId.Parse(tinyUrl.LocalPath[1..]);
+
+            UrlModel urlModel = new UrlModel()
+            {
+                _id = objectId
+            };
+
+            return await _tinyUrlMongoDBClient.GetAsync(urlModel);
         }
     }
 }

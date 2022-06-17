@@ -1,4 +1,5 @@
 ﻿using TinyUrl.Dal;
+using TinyUrl.Models;
 using TinyUrl.Validators;
 
 namespace TinyUrl.Services
@@ -15,12 +16,20 @@ namespace TinyUrl.Services
             _tinyUrlGenerator = tinyUrlGeneretor ?? throw new ArgumentNullException(nameof(tinyUrlGeneretor));
             _tinyUrlDal = tinyUrlDal ?? throw new ArgumentNullException(nameof(tinyUrlDal));
         }
-        public Task CreateTinyUrl(Uri url)
+        public async Task<Uri> CreateTinyUrl(Uri url)
         {
             _urlValidator.ValidateUrl(url);
-            Uri tinyUrl = _tinyUrlGenerator.GenreateTinyUrl(url);
-            _tinyUrlDal.InsertTinyUrl(url, tinyUrl);
-            return Task.CompletedTask;
+            UrlModel? result = await _tinyUrlDal.InsertTinyUrl(url);
+
+            var tinyUrl = $"{url.Scheme}://{url.Host}/{result._id}";
+            return new Uri(tinyUrl);
+        }
+
+        public async Task<Uri> GetOriginal(Uri url)
+        {
+            _urlValidator.ValidateUrl(url);
+            UrlModel? res =  await _tinyUrlDal.GetOriginal(url);
+            return res?.OriginalUrl;
         }
     }
 }
