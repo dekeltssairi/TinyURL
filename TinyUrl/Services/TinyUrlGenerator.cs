@@ -7,11 +7,7 @@ namespace TinyUrl.Services
     {
         public Uri GenreateTinyUrl(Uri url)
         {
-            Murmur32 murmur = MurmurHash.Create32();
-            byte[] bytes = Encoding.UTF8.GetBytes(url.LocalPath);
-            byte[] hash = murmur.ComputeHash(bytes);
-
-            string tinyUrl =  $"{url.Scheme}://{url.Host}/{BitConverter.ToString(hash)}";
+            string tinyUrl =  $"{url.Scheme}://{url.Host}/{Guid.NewGuid()}";
             return new Uri(tinyUrl);
         }
     }

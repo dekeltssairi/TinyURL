@@ -19,17 +19,14 @@ namespace TinyUrl.Services
         public async Task<Uri> CreateTinyUrl(Uri url)
         {
             _urlValidator.ValidateUrl(url);
-            UrlModel? result = await _tinyUrlDal.InsertTinyUrl(url);
-
-            var tinyUrl = $"{url.Scheme}://{url.Host}/{result._id}";
-            return new Uri(tinyUrl);
+            Uri? tinyUrl = _tinyUrlGenerator.GenreateTinyUrl(url);
+            return await _tinyUrlDal.InsertTinyUrl(url, tinyUrl);
         }
 
         public async Task<Uri> GetOriginal(Uri url)
         {
             _urlValidator.ValidateUrl(url);
-            UrlModel? res =  await _tinyUrlDal.GetOriginal(url);
-            return res?.OriginalUrl;
+            return  await _tinyUrlDal.GetOriginal(url);
         }
     }
 }

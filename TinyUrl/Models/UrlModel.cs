@@ -8,6 +8,7 @@ namespace TinyUrl.Models
         [BsonId]
         public ObjectId _id { get; set; }
         public Uri? OriginalUrl { get; set; }
+        public Uri? TinyUrl { get; set; }
 
     }
 }

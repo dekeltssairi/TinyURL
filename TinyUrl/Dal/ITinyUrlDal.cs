@@ -4,7 +4,7 @@ namespace TinyUrl.Dal
 {
     public interface ITinyUrlDal
     {
-        public Task<UrlModel> InsertTinyUrl(Uri tinyUrl);
-        public Task<UrlModel> GetOriginal(Uri tinyUrl);
+        public Task<Uri> InsertTinyUrl(Uri orginalUrl, Uri tinyUrl);
+        public Task<Uri> GetOriginal(Uri tinyUrl);
     }
 }

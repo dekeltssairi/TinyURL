@@ -24,41 +24,25 @@ namespace TinyUrl.Services
 
         }
 
-        public async Task<UrlModel?> GetOrigialUrlAsync(Uri TinyUrl)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<UrlModel> InsertAsync(UrlModel urlModel)
-        {
-            UrlModel? result = await _urlsCollection.Find(u => u.OriginalUrl == urlModel.OriginalUrl).FirstOrDefaultAsync();
-            if (result is null)
-            {
-                await _urlsCollection.InsertOneAsync(urlModel);
-                return urlModel;
-            }
-            
-            return result;
-        }
 
         public async Task<UrlModel?> GetAsync(UrlModel tinyUrl)
         {
-            return await _urlsCollection.Find(x => x._id == tinyUrl._id).FirstOrDefaultAsync();
+            return await _urlsCollection.Find(x => x.TinyUrl == tinyUrl.TinyUrl).FirstOrDefaultAsync();
         }
 
-        //public async Task<List<Book>> GetAsync() =>
-        //    await _booksCollection.Find(_ => true).ToListAsync();
+        public async Task UpsertManyAsync(IEnumerable<UrlModel> urlModels)
+        {
+            List<UpdateOneModel<UrlModel>> requests = new List<UpdateOneModel<UrlModel>>(urlModels.Count());
+            foreach (var entity in urlModels)
+            {
+                var filter = new FilterDefinitionBuilder<UrlModel>().Where(m => m.OriginalUrl == entity.OriginalUrl);
+                var update = new UpdateDefinitionBuilder<UrlModel>().Set(m => m.TinyUrl, entity.TinyUrl);
+                var request = new UpdateOneModel<UrlModel>(filter, update);
+                request.IsUpsert = true;
+                requests.Add(request);
+            }
 
-        //public async Task<Book?> GetAsync(string id) =>
-        //    await _booksCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
-
-        //public async Task CreateAsync(Book newBook) =>
-        //    await _booksCollection.InsertOneAsync(newBook);
-
-        //public async Task UpdateAsync(string id, Book updatedBook) =>
-        //    await _booksCollection.ReplaceOneAsync(x => x.Id == id, updatedBook);
-
-        //public async Task RemoveAsync(string id) =>
-        //    await _booksCollection.DeleteOneAsync(x => x.Id == id);
+            await _urlsCollection.BulkWriteAsync(requests);
+        }
     }
 }

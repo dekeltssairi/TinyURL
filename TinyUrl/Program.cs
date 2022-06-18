@@ -1,3 +1,4 @@
+using TinyUrl.Cache;
 using TinyUrl.Dal;
 using TinyUrl.Models;
 using TinyUrl.Services;
@@ -16,6 +17,7 @@ builder.Services.AddScoped<ITinyUrlValidator, TinyUrlValidator>();
 builder.Services.AddScoped<ITinyUrlService, TinyUrlService>();
 builder.Services.AddScoped<ITinyUrlDal, TinyUrlDal>();
 builder.Services.AddSingleton<ITinyUrlMongoDBClient, TinyUrlMongoDBClient>();
+builder.Services.AddSingleton<IUrlMemoryCache, UrlMemoryCache>();
 builder.Services.Configure<UrlsDatabaseSettings>(
     builder.Configuration.GetSection("UrlsDataBase"));
 var app = builder.Build();
