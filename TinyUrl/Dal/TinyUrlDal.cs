@@ -28,7 +28,7 @@ namespace TinyUrl.Dal
             };
 
             _cache.Put(urlModel.TinyUrl, urlModel.OriginalUrl);
-            _tinyUrlMongoDBClient.UpsertAsync(urlModel);
+            await _tinyUrlMongoDBClient.UpsertAsync(urlModel);
 
             return urlModel.TinyUrl;
         }

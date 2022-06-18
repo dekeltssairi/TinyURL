@@ -38,5 +38,10 @@ namespace TinyUrl.Services
             request.IsUpsert = true;
             await _urlsCollection.BulkWriteAsync(new List<UpdateOneModel<UrlModel>>() { request });
         }
+
+        //public async Task UpsertAsync(UrlModel entity)
+        //{
+        //    await _urlsCollection.ReplaceOneAsync(doc => doc.OriginalUrl == entity.OriginalUrl, entity, new ReplaceOptions { IsUpsert = true });
+        //}
     }
 }
