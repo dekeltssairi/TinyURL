@@ -6,6 +6,6 @@ namespace TinyUrl.Services
     {
         public Task<Uri> CreateTinyUrl(Uri url);
 
-        public Task<Uri> GetOriginal(Uri url);
+        public Task<Uri> GetOriginalUrl(Uri tinyUrl);
     }
 }

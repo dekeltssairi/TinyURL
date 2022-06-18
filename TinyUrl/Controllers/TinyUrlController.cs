@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TinyUrl.Services;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace TinyUrl.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class TinyUrlController : ControllerBase
     {
@@ -16,14 +14,14 @@ namespace TinyUrl.Controllers
             _tinyUrlService = tinyUrlService ?? throw new ArgumentNullException(nameof(tinyUrlService));
         }
 
-        [HttpGet]
+        [HttpGet("GetTinyUrl")]
         public async Task<Uri> Get(Uri url)
         {
-            return await _tinyUrlService.GetOriginal(url);
+            return await _tinyUrlService.GetOriginalUrl(url);
         }
 
-        [HttpPost]
-        public async Task<Uri> Post([FromBody] Uri url)
+        [HttpPost("CreateTinyUrl")]
+        public async Task<Uri> CreateAsync([FromBody] Uri url)
         {
             return await _tinyUrlService.CreateTinyUrl(url);
         }

@@ -12,14 +12,16 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<ITinyUrlGeneretor, TinyUrlGenerator>();
-builder.Services.AddScoped<ITinyUrlValidator, TinyUrlValidator>();
-builder.Services.AddScoped<ITinyUrlService, TinyUrlService>();
-builder.Services.AddScoped<ITinyUrlDal, TinyUrlDal>();
+builder.Services.AddSingleton<ITinyUrlGeneretor, TinyUrlGenerator>();
+builder.Services.AddSingleton<ITinyUrlValidator, TinyUrlValidator>();
+builder.Services.AddSingleton<ITinyUrlService, TinyUrlService>();
+builder.Services.AddSingleton<ITinyUrlDal, TinyUrlDal>();
 builder.Services.AddSingleton<ITinyUrlMongoDBClient, TinyUrlMongoDBClient>();
 builder.Services.AddSingleton<IUrlMemoryCache, UrlMemoryCache>();
 builder.Services.Configure<UrlsDatabaseSettings>(
-    builder.Configuration.GetSection("UrlsDataBase"));
+builder.Configuration.GetSection("UrlsDataBase"));
+builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection("Cache"));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

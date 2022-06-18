@@ -9,6 +9,7 @@ namespace TinyUrl.Dal
 {
     public class TinyUrlDal : ITinyUrlDal
     {
+        private static readonly object _locker = new object();
         private readonly ITinyUrlMongoDBClient _tinyUrlMongoDBClient;
         private readonly IUrlMemoryCache _cache;
 
@@ -18,27 +19,27 @@ namespace TinyUrl.Dal
             _cache = urlMemoryCache ?? throw new ArgumentNullException(nameof(urlMemoryCache));
         }
 
-        public async Task<Uri> InsertTinyUrl(Uri orginalUrl, Uri tinyUrl)
+        public async Task<Uri> InsertTinyUrl(Uri originalUrl, Uri tinyUrl)
         {
             UrlModel urlModel = new UrlModel()
             {
-                OriginalUrl = orginalUrl,
+                OriginalUrl = originalUrl,
                 TinyUrl = tinyUrl
             };
 
-            UrlModel? result = _cache.GetOrCreate(urlModel.OriginalUrl, urlModel);
+            _cache.InsertIfNotExist(urlModel);
 
-            if (_cache.KeyValuePairs.Count == _cache.MaxCacheSize)
+            if (_cache.IsFull())
             {
                 await UpdateDbWithCacheValues();
             }
 
-            return result?.TinyUrl;
+            return urlModel.TinyUrl;
         }
 
         private async Task UpdateDbWithCacheValues()
         {
-            IEnumerable<UrlModel>? entites = _cache.KeyValuePairs.Values.AsEnumerable();
+            IEnumerable<UrlModel>? entites = _cache.OrginalUrlToModelDict.Values.AsEnumerable();
             await _tinyUrlMongoDBClient.UpsertManyAsync(entites);
             _cache.Clear();
         }
@@ -59,17 +60,16 @@ namespace TinyUrl.Dal
 
                 if (urlModelFromDb != null)
                 {
-                    result = urlModelFromDb;
+                    _cache.InsertIfNotExist(urlModelFromDb);
 
-                    _cache.GetOrCreate(urlModelFromDb.OriginalUrl, urlModelFromDb);
-
-                    if (_cache.KeyValuePairs.Count == _cache.MaxCacheSize)
+                    if (_cache.OrginalUrlToModelDict.Count == _cache.MaxCacheSize)
                     {
                         await UpdateDbWithCacheValues();
                     }
+
+                    return urlModelFromDb.OriginalUrl;
                 }
             }
-
 
             return result?.OriginalUrl;
         }
