@@ -1,0 +1,31 @@
+We want to add a cache layer to optimize a burst of redirections
+The cache should be size limited to protect memory from overflow. Please introduce at least two approaches for size limited caching and discuss about the advantages and disadvantages of each one of them.
+Choose one approach and implement it without any usage of external libraries. (Only System.*)
+In your solution consider concurrency and multi-threading aspects that will ensure your code is consistent and safe.
+
+Two possible solutions:
+
+1.	Store the cache in memory with an appropriate data structure (like concurrent dictionary)
+
+Pros:
+
+-	Very fast cache mechanism since the data cached is in the server memory
+-	Easy solution to implement and maintain
+
+Cons:
+
+-	Risk of losing the cache in case of the server is crashing
+-	Cache need to be very size limit since its sit in the memory
+
+
+2.	Store the cache in the file system
+
+Pros:
+
+-	no risk of cache deletion no matter the server state
+
+Cons:
+
+-	Not fast as the in memory solution since every operation to the cache required file system accessing
+-   If the server and the DB are on the same machine - almost no performance improvement (almost no "real caching")
+

@@ -11,9 +11,9 @@ namespace TinyUrl.Dal
     {
         private static readonly object _locker = new object();
         private readonly ITinyUrlMongoDBClient _tinyUrlMongoDBClient;
-        private readonly IUrlMemoryCache _cache;
+        private readonly ICache _cache;
 
-        public TinyUrlDal(ITinyUrlMongoDBClient tinyUrlMongoDBClient, IUrlMemoryCache urlMemoryCache)
+        public TinyUrlDal(ITinyUrlMongoDBClient tinyUrlMongoDBClient, ICache urlMemoryCache)
         {
             _tinyUrlMongoDBClient = tinyUrlMongoDBClient ?? throw new ArgumentNullException(nameof(tinyUrlMongoDBClient));
             _cache = urlMemoryCache ?? throw new ArgumentNullException(nameof(urlMemoryCache));
@@ -27,27 +27,29 @@ namespace TinyUrl.Dal
                 TinyUrl = tinyUrl
             };
 
-            _cache.InsertIfNotExist(urlModel);
-
-            if (_cache.IsFull())
-            {
-                await UpdateDbWithCacheValues();
-            }
+            _cache.Put(urlModel.TinyUrl, urlModel.OriginalUrl);
+            _tinyUrlMongoDBClient.UpsertAsync(urlModel);
 
             return urlModel.TinyUrl;
         }
 
-        private async Task UpdateDbWithCacheValues()
-        {
-            IEnumerable<UrlModel>? entites = _cache.OrginalUrlToModelDict.Values.AsEnumerable();
-            await _tinyUrlMongoDBClient.UpsertManyAsync(entites);
-            _cache.Clear();
-        }
+        //private async Task UpdateDbWithCacheValues()
+        //{
+        //    Dictionary<Uri, (LinkedListNode<Uri> node, Uri value, int count)>.ValueCollection? res = _cache._cache.Values;
+
+        //    foreach ((LinkedListNode<Uri> node, Uri value, int count) item in res)
+        //    {
+        //        Uri? res2 = item.value;
+        //    }
+
+        //    await _tinyUrlMongoDBClient.UpsertManyAsync(entites);
+        //    _cache.Clear();
+        //}
 
         public async Task<Uri> GetOriginal(Uri tinyUrl)
         {
 
-            UrlModel? result = _cache.Get(tinyUrl);
+            Uri? result = _cache.Get(tinyUrl);
 
             if (result is null)
             {
@@ -56,22 +58,16 @@ namespace TinyUrl.Dal
                     TinyUrl = tinyUrl
                 };
 
-                UrlModel urlModelFromDb =  await _tinyUrlMongoDBClient.GetAsync(urlModel);
+                UrlModel? urlModelFromDb =  await _tinyUrlMongoDBClient.GetAsync(urlModel);
 
                 if (urlModelFromDb != null)
                 {
-                    _cache.InsertIfNotExist(urlModelFromDb);
-
-                    if (_cache.OrginalUrlToModelDict.Count == _cache.MaxCacheSize)
-                    {
-                        await UpdateDbWithCacheValues();
-                    }
-
+                    _cache.Put(urlModel.TinyUrl, urlModel.OriginalUrl);
                     return urlModelFromDb.OriginalUrl;
                 }
             }
 
-            return result?.OriginalUrl;
+            return result;
         }
     }
 }

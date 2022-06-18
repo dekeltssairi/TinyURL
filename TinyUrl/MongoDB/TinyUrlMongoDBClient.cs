@@ -30,19 +30,28 @@ namespace TinyUrl.Services
             return await _urlsCollection.Find(x => x.TinyUrl == tinyUrl.TinyUrl).FirstOrDefaultAsync();
         }
 
-        public async Task UpsertManyAsync(IEnumerable<UrlModel> urlModels)
+        public async Task UpsertAsync(UrlModel entity)
         {
-            List<UpdateOneModel<UrlModel>> requests = new List<UpdateOneModel<UrlModel>>(urlModels.Count());
-            foreach (var entity in urlModels)
-            {
-                var filter = new FilterDefinitionBuilder<UrlModel>().Where(m => m.OriginalUrl == entity.OriginalUrl);
-                var update = new UpdateDefinitionBuilder<UrlModel>().Set(m => m.TinyUrl, entity.TinyUrl);
-                var request = new UpdateOneModel<UrlModel>(filter, update);
-                request.IsUpsert = true;
-                requests.Add(request);
-            }
-
-            await _urlsCollection.BulkWriteAsync(requests);
+            FilterDefinition<UrlModel>? filter = new FilterDefinitionBuilder<UrlModel>().Where(m => m.OriginalUrl == entity.OriginalUrl);
+            UpdateDefinition<UrlModel>? update = new UpdateDefinitionBuilder<UrlModel>().Set(m => m.TinyUrl, entity.TinyUrl);
+            UpdateOneModel<UrlModel>? request = new UpdateOneModel<UrlModel>(filter, update);
+            request.IsUpsert = true;
+            await _urlsCollection.BulkWriteAsync(new List<UpdateOneModel<UrlModel>>() { request });
         }
+
+        //public async Task UpsertManyAsync(IEnumerable<UrlModel> urlModels)
+        //{
+        //    List<UpdateOneModel<UrlModel>> requests = new List<UpdateOneModel<UrlModel>>(urlModels.Count());
+        //    foreach (var entity in urlModels)
+        //    {
+        //        var filter = new FilterDefinitionBuilder<UrlModel>().Where(m => m.OriginalUrl == entity.OriginalUrl);
+        //        var update = new UpdateDefinitionBuilder<UrlModel>().Set(m => m.TinyUrl, entity.TinyUrl);
+        //        var request = new UpdateOneModel<UrlModel>(filter, update);
+        //        request.IsUpsert = true;
+        //        requests.Add(request);
+        //    }
+
+        //    await _urlsCollection.BulkWriteAsync(requests);
+        //}
     }
 }

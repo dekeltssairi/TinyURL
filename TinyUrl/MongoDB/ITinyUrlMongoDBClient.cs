@@ -6,6 +6,6 @@ namespace TinyUrl.Services
     public interface ITinyUrlMongoDBClient
     {
         public Task<UrlModel?> GetAsync(UrlModel TinyUrl);
-        public Task UpsertManyAsync(IEnumerable<UrlModel> urlModels);
+        public Task UpsertAsync(UrlModel TinyUrl);
     }
 }

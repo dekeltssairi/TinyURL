@@ -18,6 +18,7 @@ builder.Services.AddSingleton<ITinyUrlService, TinyUrlService>();
 builder.Services.AddSingleton<ITinyUrlDal, TinyUrlDal>();
 builder.Services.AddSingleton<ITinyUrlMongoDBClient, TinyUrlMongoDBClient>();
 builder.Services.AddSingleton<IUrlMemoryCache, UrlMemoryCache>();
+builder.Services.AddSingleton<ICache, LFUCache>();
 builder.Services.Configure<UrlsDatabaseSettings>(
 builder.Configuration.GetSection("UrlsDataBase"));
 builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection("Cache"));
