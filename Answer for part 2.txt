@@ -1,31 +1,21 @@
-We want to add a cache layer to optimize a burst of redirections
+We want to add a cache layer to optimize a burst of redirection
 The cache should be size limited to protect memory from overflow. Please introduce at least two approaches for size limited caching and discuss about the advantages and disadvantages of each one of them.
 Choose one approach and implement it without any usage of external libraries. (Only System.*)
 In your solution consider concurrency and multi-threading aspects that will ensure your code is consistent and safe.
 
-Two possible solutions:
+Answer:
 
-1.	Store the cache in memory with an appropriate data structure (like concurrent dictionary)
+There are multiple eviction Policies to manage size limit cache, I will discuss about two of them:
 
-Pros:
+1.	Least Recently Used (LRU): Appropriate for most of the use cases, especially for applications who keep accessing the same data
+    Main advantage: Removes elements that are not used recently - nearly optimal for most of the use cases
+	Main disadvantage: Not optimal when we less care about when an item in cache was last accessed (for example when its more important how often an element was accessed)
 
--	Very fast cache mechanism since the data cached is in the server memory
--	Easy solution to implement and maintain
+2.	Least Frequently Used (LFU): An eviction algorithm which take the accessing frequency of the an element in the cache into account
+	Therefore in the long run, the most frequently elements used will be kept in cache until other elements surpass them in usage. 
 
-Cons:
+	Main advantage: optimal when a lot of elements is requested in a period of time
+	
+	Main disadvantage:  A frequently accessed element will only be evicted after lots of misses
 
--	Risk of losing the cache in case of the server is crashing
--	Cache need to be very size limit since its sit in the memory
-
-
-2.	Store the cache in the file system
-
-Pros:
-
--	no risk of cache deletion no matter the server state
-
-Cons:
-
--	Not fast as the in memory solution since every operation to the cache required file system accessing
--   If the server and the DB are on the same machine - almost no performance improvement (almost no "real caching")
-
+I chose to implement LFU since in the long run, and under high load, the cache will reflected the most requested websites.

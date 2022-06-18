@@ -38,20 +38,5 @@ namespace TinyUrl.Services
             request.IsUpsert = true;
             await _urlsCollection.BulkWriteAsync(new List<UpdateOneModel<UrlModel>>() { request });
         }
-
-        //public async Task UpsertManyAsync(IEnumerable<UrlModel> urlModels)
-        //{
-        //    List<UpdateOneModel<UrlModel>> requests = new List<UpdateOneModel<UrlModel>>(urlModels.Count());
-        //    foreach (var entity in urlModels)
-        //    {
-        //        var filter = new FilterDefinitionBuilder<UrlModel>().Where(m => m.OriginalUrl == entity.OriginalUrl);
-        //        var update = new UpdateDefinitionBuilder<UrlModel>().Set(m => m.TinyUrl, entity.TinyUrl);
-        //        var request = new UpdateOneModel<UrlModel>(filter, update);
-        //        request.IsUpsert = true;
-        //        requests.Add(request);
-        //    }
-
-        //    await _urlsCollection.BulkWriteAsync(requests);
-        //}
     }
 }

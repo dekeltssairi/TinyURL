@@ -4,11 +4,13 @@ namespace TinyUrl.Cache
 {
     public class LFUCache : ICache
     {
+        private static readonly object _locker = new object();
         private int _minCount;
         private readonly int _capacity;
 
 
         private readonly Dictionary<int, LinkedList<Uri>> _countMap;
+
 
         public Dictionary<Uri, (LinkedListNode<Uri> node, Uri value, int count)> _cache { get; private set; }
 
@@ -26,50 +28,62 @@ namespace TinyUrl.Cache
 
         public Uri? Get(Uri uriKey)
         {
-            if (!_cache.ContainsKey(uriKey))
-                return null;
-
-            (LinkedListNode<Uri> node, Uri value, int count) = _cache[uriKey];
-            PromoteItem(uriKey, value, count, node);
-
-            return value;
+            lock(_locker)
+            {
+                if (!_cache.ContainsKey(uriKey))
+                    return null;
+                
+                (LinkedListNode<Uri> node, Uri value, int count) = _cache[uriKey];
+                PromoteItem(uriKey, value, count, node);
+                return value;
+            }
         }
 
         public void Put(Uri key, Uri value)
         {
-            if (_cache.ContainsKey(key))
+            lock (_locker)
             {
-                (LinkedListNode<Uri> node, Uri _, int count) = _cache[key];
-                PromoteItem(key, value, count, node);
-            }
-            else
-            {
-                if (_cache.Count >= _capacity)
+                if (_cache.ContainsKey(key))
                 {
-                    LinkedList<Uri>? minList = _countMap[_minCount];
-                    _cache.Remove(minList.Last!.Value);
-                    minList.RemoveLast();
+                    (LinkedListNode<Uri> node, Uri _, int count) = _cache[key];
+                    PromoteItem(key, value, count, node);
                 }
+                else
+                {
+                    if (_cache.Count >= _capacity)
+                    {
+                        lock (_cache)
+                        {
+                            LinkedList<Uri>? minList = _countMap[_minCount];
+                            _cache.Remove(minList.Last!.Value);
+                            minList.RemoveLast();
 
-                _cache.Add(key, (_countMap[1].AddFirst(key), value, 1));
-                _minCount = 1;
+                        }
+                    }
+
+                    _cache.Add(key, (_countMap[1].AddFirst(key), value, 1));
+                    _minCount = 1;
+                }
             }
         }
 
         private void PromoteItem(Uri key, Uri value, int count, LinkedListNode<Uri> node)
         {
-            LinkedList<Uri>? list = _countMap[count];
-            list.Remove(node);
+            lock (_locker)
+            {
+                LinkedList<Uri>? list = _countMap[count];
+                list.Remove(node);
 
-            if (_minCount == count && list.Count == 0)
-                _minCount++;
+                if (_minCount == count && list.Count == 0)
+                    _minCount++;
 
-            var newCount = count + 1;
-            if (!_countMap.ContainsKey(newCount))
-                _countMap[newCount] = new LinkedList<Uri>();
+                var newCount = count + 1;
+                if (!_countMap.ContainsKey(newCount))
+                    _countMap[newCount] = new LinkedList<Uri>();
 
-            _countMap[newCount].AddFirst(node);
-            _cache[key] = (node, value, newCount);
+                _countMap[newCount].AddFirst(node);
+                _cache[key] = (node, value, newCount);
+            }
         }
     }
 }
