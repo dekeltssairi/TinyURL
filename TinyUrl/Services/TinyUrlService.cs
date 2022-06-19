@@ -16,17 +16,17 @@ namespace TinyUrl.Services
             _tinyUrlGenerator = tinyUrlGeneretor ?? throw new ArgumentNullException(nameof(tinyUrlGeneretor));
             _tinyUrlDal = tinyUrlDal ?? throw new ArgumentNullException(nameof(tinyUrlDal));
         }
-        public async Task<Uri> CreateTinyUrl(Uri url)
+        public Task<Uri> CreateTinyUrl(Uri url)
         {
             _urlValidator.ValidateUrl(url);
             Uri tinyUrl = _tinyUrlGenerator.GenreateTinyUrl(url);
-            return await _tinyUrlDal.InsertTinyUrl(url, tinyUrl);
+            return _tinyUrlDal.InsertTinyUrl(url, tinyUrl);
         }
 
-        public async Task<Uri> GetOriginalUrl(Uri tinyUrl)
+        public Task<Uri> GetOriginalUrl(Uri tinyUrl)
         {
             _urlValidator.ValidateUrl(tinyUrl);
-            return  await _tinyUrlDal.GetOriginal(tinyUrl);
+            return  _tinyUrlDal.GetOriginal(tinyUrl);
         }
     }
 }

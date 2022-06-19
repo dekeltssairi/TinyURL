@@ -1,4 +1,6 @@
-﻿namespace TinyUrl.Validators
+﻿using TinyUrl.Exceptions;
+
+namespace TinyUrl.Validators
 {
     public class TinyUrlValidator : ITinyUrlValidator
     {
@@ -6,7 +8,7 @@
         {
             if (!IsValidUrl(url.OriginalString))
             {
-                throw new InvalidOperationException("Given URL is not valid");
+                throw new InvalidUrlException("Given URL is not valid");
             }
         }
 

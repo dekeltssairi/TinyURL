@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using TinyUrl.Exceptions;
 using TinyUrl.Services;
 
 namespace TinyUrl.Controllers
@@ -15,15 +16,47 @@ namespace TinyUrl.Controllers
         }
 
         [HttpGet("GetTinyUrl")]
-        public async Task<Uri> Get(Uri url)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Uri))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<Uri>> Get(Uri tinyUrl)
         {
-            return await _tinyUrlService.GetOriginalUrl(url);
+            try
+            {
+                Uri originalUrl = await _tinyUrlService.GetOriginalUrl(tinyUrl);
+                return Ok(originalUrl);
+            }
+            catch (InvalidUrlException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+
         }
 
         [HttpPost("CreateTinyUrl")]
-        public async Task<Uri> CreateAsync([FromBody] Uri url)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Uri))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<ActionResult<Uri>> CreateAsync([FromBody] Uri url)
         {
-            return await _tinyUrlService.CreateTinyUrl(url);
+            try
+            {
+                Uri tinyUrl = await _tinyUrlService.CreateTinyUrl(url);
+                return tinyUrl is null ? Ok(tinyUrl) : NoContent();
+            }
+            catch(InvalidUrlException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
     }
 }

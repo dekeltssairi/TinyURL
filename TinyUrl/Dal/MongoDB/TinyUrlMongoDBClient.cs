@@ -21,7 +21,6 @@ namespace TinyUrl.Services
 
             _urlsCollection = mongoDatabase.GetCollection<UrlModel>(
                 urlsDatabaseSettings.Value.UrlsCollectionName);
-
         }
 
 

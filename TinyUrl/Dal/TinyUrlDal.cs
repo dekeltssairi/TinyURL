@@ -21,13 +21,10 @@ namespace TinyUrl.Dal
 
         public async Task<Uri> InsertTinyUrl(Uri originalUrl, Uri tinyUrl)
         {
-            UrlModel urlModel = new UrlModel()
-            {
-                OriginalUrl = originalUrl,
-                TinyUrl = tinyUrl
-            };
+            UrlModel urlModel = CreateUrlModel(originalUrl, tinyUrl);
 
             _cache.Put(urlModel.TinyUrl, urlModel.OriginalUrl);
+            
             await _tinyUrlMongoDBClient.UpsertAsync(urlModel);
 
             return urlModel.TinyUrl;
@@ -51,23 +48,29 @@ namespace TinyUrl.Dal
 
             Uri? result = _cache.Get(tinyUrl);
 
-            if (result is null)
+            if (result is not null)
             {
-                UrlModel urlModel = new UrlModel()
-                {
-                    TinyUrl = tinyUrl
-                };
-
-                UrlModel? urlModelFromDb =  await _tinyUrlMongoDBClient.GetAsync(urlModel);
-
-                if (urlModelFromDb != null)
-                {
-                    _cache.Put(urlModel.TinyUrl, urlModel.OriginalUrl);
-                    return urlModelFromDb.OriginalUrl;
-                }
+                return result;
             }
 
-            return result;
+            UrlModel? urlModelFromDb =  await _tinyUrlMongoDBClient.GetAsync(new UrlModel() { TinyUrl = tinyUrl});
+
+            if (urlModelFromDb is null)
+            {
+                return null;
+            }
+
+            _cache.Put(urlModelFromDb.TinyUrl, urlModelFromDb.OriginalUrl);
+            return urlModelFromDb.OriginalUrl;
+        }
+
+        private UrlModel CreateUrlModel(Uri originalUrl, Uri tinyUrl)
+        {
+            return new UrlModel()
+            {
+                OriginalUrl = originalUrl,
+                TinyUrl = tinyUrl
+            };
         }
     }
 }
