@@ -5,14 +5,12 @@ namespace TinyUrl.Cache
     public class LFUCache : ICache
     {
         private static readonly object _locker = new object();
-        private int _minCount;
+
         private readonly int _capacity;
-
-
         private readonly Dictionary<int, LinkedList<Uri>> _countMap;
+        private readonly Dictionary<Uri, (LinkedListNode<Uri> node, Uri value, int count)> _cache;
 
-
-        public Dictionary<Uri, (LinkedListNode<Uri> node, Uri value, int count)> _cache { get; private set; }
+        private int _minCount;
 
         public LFUCache(IOptions<CacheSettings> CacheSettings)
         {
@@ -52,13 +50,9 @@ namespace TinyUrl.Cache
                 {
                     if (_cache.Count >= _capacity)
                     {
-                        lock (_cache)
-                        {
-                            LinkedList<Uri>? minList = _countMap[_minCount];
-                            _cache.Remove(minList.Last!.Value);
-                            minList.RemoveLast();
-
-                        }
+                        LinkedList<Uri>? minList = _countMap[_minCount];
+                        _cache.Remove(minList.Last!.Value);
+                        minList.RemoveLast();
                     }
 
                     _cache.Add(key, (_countMap[1].AddFirst(key), value, 1));
