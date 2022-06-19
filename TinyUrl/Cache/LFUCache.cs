@@ -69,21 +69,18 @@ namespace TinyUrl.Cache
 
         private void PromoteItem(Uri key, Uri value, int count, LinkedListNode<Uri> node)
         {
-            lock (_locker)
-            {
-                LinkedList<Uri>? list = _countMap[count];
-                list.Remove(node);
-
-                if (_minCount == count && list.Count == 0)
-                    _minCount++;
-
-                var newCount = count + 1;
-                if (!_countMap.ContainsKey(newCount))
-                    _countMap[newCount] = new LinkedList<Uri>();
-
-                _countMap[newCount].AddFirst(node);
-                _cache[key] = (node, value, newCount);
-            }
+            LinkedList<Uri>? list = _countMap[count];
+            list.Remove(node);
+            
+            if (_minCount == count && list.Count == 0)
+                _minCount++;
+            
+            var newCount = count + 1;
+            if (!_countMap.ContainsKey(newCount))
+                _countMap[newCount] = new LinkedList<Uri>();
+            
+            _countMap[newCount].AddFirst(node);
+            _cache[key] = (node, value, newCount);
         }
     }
 }
